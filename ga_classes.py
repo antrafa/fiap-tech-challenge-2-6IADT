@@ -1,6 +1,6 @@
+import random
 import numpy as np
 from math import sqrt
-import random
 
 class Individual:
     def __init__(self, route, points):
@@ -9,19 +9,16 @@ class Individual:
         self.fitness = self.calculate_fitness()
 
     def calculate_fitness(self):
-        """Calcula a aptidão da rota, incluindo penalidades por prioridade e capacidade."""
         total_distance = 0
-        max_capacity = 50 # Exemplo: Capacidade máxima de um único veículo
+        max_capacity = 50 
         current_volume = 0
-        priority_penalty_factor = 1000 # Fator de penalidade por não entregar prioridade cedo
+        priority_penalty_factor = 1000
         penalty = 0
 
         for i in range(len(self.route) - 1):
             point_a_data = self.points[self.route[i]]
             point_b_data = self.points[self.route[i+1]]
-            
             total_distance += self.get_distance(point_a_data['coords'], point_b_data['coords'])
-
             current_volume += point_a_data['volume']
             
         total_distance += self.get_distance(self.points[self.route[-1]]['coords'], self.points[self.route[0]]['coords'])
@@ -41,7 +38,6 @@ class Individual:
 
     @staticmethod
     def get_distance(point1, point2):
-        """Calcula a distância euclidiana entre dois pontos."""
         return sqrt((point1[0] - point2[0])**2 + (point1[1] - point2[1])**2)
 
 class Population:
@@ -63,22 +59,17 @@ class Population:
         return total_fitness / len(self.population)
 
     def select_parent_tournament(self, pool_size=5):
-        """Seleciona um pai usando a seleção por torneio."""
         tournament_pool = random.sample(self.population, pool_size)
         fittest_parent = max(tournament_pool, key=lambda x: x.fitness)
         return fittest_parent
 
     def crossover_ox1(self, parent1, parent2):
-        """Crossover Order (OX1) para criar um novo indivíduo."""
         child_route = [None] * len(parent1.route)
         start_pos = random.randint(0, len(parent1.route) - 1)
         end_pos = random.randint(0, len(parent1.route) - 1)
-
         if start_pos > end_pos:
             start_pos, end_pos = end_pos, start_pos
-
         child_route[start_pos:end_pos+1] = parent1.route[start_pos:end_pos+1]
-
         parent2_genes = [gene for gene in parent2.route if gene not in child_route]
         child_route_filled = []
         p2_idx = 0
@@ -91,26 +82,19 @@ class Population:
         return child_route_filled
 
     def mutate(self, route, mutation_rate):
-        """Muta a rota com base na taxa de mutação."""
         if random.random() < mutation_rate:
             idx1, idx2 = random.sample(range(len(route)), 2)
             route[idx1], route[idx2] = route[idx2], route[idx1]
         return route
 
     def evolve(self, mutation_rate, points):
-        """Cria uma nova população a partir da atual usando os operadores genéticos."""
         new_population = []
-        
         elite = self.get_fittest()
         new_population.append(Individual(elite.route, points))
-
         while len(new_population) < len(self.population):
             parent1 = self.select_parent_tournament()
             parent2 = self.select_parent_tournament()
-            
             child_route = self.crossover_ox1(parent1, parent2)
             child_route = self.mutate(child_route, mutation_rate)
-            
             new_population.append(Individual(child_route, points))
-            
         self.population = new_population

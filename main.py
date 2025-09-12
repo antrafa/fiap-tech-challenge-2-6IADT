@@ -1,8 +1,8 @@
 import pygame
 import sys
-from ga_manager import GeneticAlgorithmManager
+from helpers import draw_text, draw_points, draw_route, draw_plot, generate_points, PALETTE
 from ui_elements import Button, Slider
-from helpers import draw_text, draw_points, draw_route, draw_graph, PALETTE
+from ga_classes import Population
 
 pygame.init()
 width, height = 1000, 1000
@@ -14,22 +14,40 @@ mutation_rate = 0.05
 num_generations = 1000
 num_points = 20
 
-UI_PANEL_HEIGHT = 80
+UI_PANEL_HEIGHT = 100
+BUTTON_WIDTH = 100
+BUTTON_HEIGHT = 40
+BUTTON_Y = 90
+BUTTON_RELOAD_X = width - 330
+BUTTON_RUN_X = width - 110
+BUTTON_REGEN_X = width - 220
+SLIDER_WIDTH = 300
+SLIDER_HEIGHT = 20
+SLIDER_Y_CITIES = 100
+SLIDER_Y_GEN = 100
+SLIDER_X = 20
 
-title_text = "Otimização de Rotas - Algoritmo Genético"
-button_reload = Button((width - 320, 90, 150, 40), "Recarregar", "reload", screen)
-button_run_ga = Button((width - 160, 90, 150, 40), "Rodar GA", "run", screen)
-slider_cities = Slider(20, 100, 300, 20, 2, 200, num_points, screen)
-slider_generations = Slider(340, 100, 300, 20, 10, 2000, num_generations, screen)
+button_reload = Button((BUTTON_RELOAD_X, BUTTON_Y, BUTTON_WIDTH, BUTTON_HEIGHT), "Recarregar", "reload")
+button_regenerate = Button((BUTTON_REGEN_X, BUTTON_Y, BUTTON_WIDTH, BUTTON_HEIGHT), "Regerar", "regenerate")
+button_run_ga = Button((BUTTON_RUN_X, BUTTON_Y, BUTTON_WIDTH, BUTTON_HEIGHT), "Rodar GA", "run")
+slider_cities = Slider(SLIDER_X, SLIDER_Y_CITIES, SLIDER_WIDTH, SLIDER_HEIGHT, 2, 200, num_points)
+slider_generations = Slider(SLIDER_X + SLIDER_WIDTH + 20, SLIDER_Y_GEN, SLIDER_WIDTH, SLIDER_HEIGHT, 10, 2000, num_generations)
 
 chart_area = pygame.Rect(20, 180, 450, 700)
 map_area = pygame.Rect(530, 180, 450, 700)
 
 def main():
-    ga_manager = GeneticAlgorithmManager(num_points, population_size, mutation_rate, num_generations)
+    global num_points, num_generations, running_ga
     
-    running_ga = False
+    points = generate_points(num_points)
+    current_population = None
+    current_best_individual = None
+    generation = 0
+    best_fitness_history = []
+    
     running = True
+    running_ga = False
+    
     while running:
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
@@ -37,51 +55,74 @@ def main():
                 sys.exit()
             
             num_points_new = slider_cities.handle_event(event)
-            if num_points_new != ga_manager.num_points:
-                ga_manager.num_points = num_points_new
+            if num_points_new != num_points:
+                num_points = num_points_new
                 running_ga = False
-                ga_manager.reset_state()
+                points = generate_points(num_points)
+                current_population = Population(size=population_size, points=points)
+                current_best_individual = current_population.get_fittest()
+                generation = 0
+                best_fitness_history = []
             
             num_generations_new = slider_generations.handle_event(event)
-            if num_generations_new != ga_manager.num_generations:
-                ga_manager.num_generations = num_generations_new
+            if num_generations_new != num_generations:
+                num_generations = num_generations_new
                 running_ga = False
-                ga_manager.reset_state()
-
+                generation = 0
+                best_fitness_history = []
+            
             if button_reload.is_clicked(event):
                 running_ga = False
-                ga_manager.reset_state()
+                current_population = Population(size=population_size, points=points)
+                current_best_individual = current_population.get_fittest()
+                generation = 0
+                best_fitness_history = []
             
             if button_run_ga.is_clicked(event):
                 running_ga = not running_ga
+                
             
-        if running_ga:
-            ga_manager.evolve_one_step()
+            if button_regenerate.is_clicked(event):
+                running_ga = False
+                points = generate_points(num_points)
+                current_population = Population(size=population_size, points=points)
+                current_best_individual = current_population.get_fittest()
+                generation = 0
+                best_fitness_history = []
+                
+        if running_ga and generation < num_generations:
+            current_population.evolve(mutation_rate, points)
+            current_best_individual = current_population.get_fittest()
+            best_fitness_history.append(current_best_individual.fitness)
+            generation += 1
         
-        screen.fill(PALETTE["background"])
-        
-        # Desenha a UI
-        pygame.draw.rect(screen, PALETTE["secondary"], (0, 70, width, UI_PANEL_HEIGHT))
-        draw_text(screen, title_text, (width // 2, 40), font_size=48, color=PALETTE["text_dark"])
-        button_reload.draw()
-        button_run_ga.draw()
-        slider_cities.draw()
-        slider_generations.draw()
-        
-        draw_text(screen, f"Cidades: {ga_manager.num_points}", (180, 85), color=PALETTE["text_dark"])
-        draw_text(screen, f"Gerações: {ga_manager.generation}/{ga_manager.num_generations}", (480, 85), font_size=20, color=PALETTE["text_dark"])
-        
-        best_dist = 1/ga_manager.best_individual.fitness if ga_manager.best_individual and ga_manager.best_individual.fitness > 0 else 0
-        draw_text(screen, f"Melhor Distância: {best_dist:.2f}", (900, 160), font_size=20, color=PALETTE["text_dark"])
+        print_screen(points, current_best_individual, generation, best_fitness_history)
 
-        draw_graph(screen, ga_manager.best_fitness_history, chart_area, PALETTE["primary"], "Melhor Aptidão")
+
+def print_screen(points, current_best_individual, generation, best_fitness_history):
+    screen.fill(PALETTE["background"])
+
+    pygame.draw.rect(screen, PALETTE["secondary"], (0, 70, width, UI_PANEL_HEIGHT))
+    draw_text(screen, "Otimização de Rotas - Algoritmo Genético", (width // 2, 40), font_size=48, color=PALETTE["text_dark"])
+    button_reload.draw(screen)
+    button_regenerate.draw(screen)
+    button_run_ga.draw(screen)
+    slider_cities.draw(screen)
+    slider_generations.draw(screen)
         
-        draw_points(screen, ga_manager.points)
-        if ga_manager.best_individual:
-            draw_route(screen, ga_manager.best_individual.route, ga_manager.points, PALETTE["primary"], thickness=3)
+    draw_text(screen, f"Cidades: {num_points}", (180, 90), color=PALETTE["text_dark"])
+    draw_text(screen, f"Gerações: {generation}/{num_generations}", (490, 90), font_size=20, color=PALETTE["text_dark"])
         
-        pygame.display.flip()
-        pygame.time.wait(10)
+    draw_plot(screen, best_fitness_history, chart_area)
+        
+    draw_points(screen, points)
+    if running_ga and current_best_individual:
+        best_dist = 1/current_best_individual.fitness if current_best_individual and current_best_individual.fitness > 0 else 0
+        draw_text(screen, f"Melhor Distância: {best_dist:.2f}", (105, 150), font_size=20, color=PALETTE["text_dark"])
+        draw_route(screen, current_best_individual.route, points, PALETTE["primary"], thickness=3)
+
+    pygame.display.flip()
+    pygame.time.wait(10)
 
 if __name__ == '__main__':
     main()

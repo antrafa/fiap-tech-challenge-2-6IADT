@@ -35,16 +35,7 @@ Com o ambiente virtual ativado, instale as bibliotecas necessárias usando o `re
 ```bash
 pip install -r requirements.txt
 ```
-
-### 3. Gerar os Dados de Entrada
-
-O projeto utiliza um conjunto de pontos de entrega gerados aleatoriamente. Execute o script `generate_data.py` para criar o arquivo `delivery_points.csv`.
-
-```bash
-python generate_data.py
-```
-
-### 4. Executar o Algoritmo e a Visualização
+### 3. Executar o Algoritmo e a Visualização
 
 O código principal para a otimização e visualização está no arquivo `main.py`.
 
