@@ -1,0 +1,75 @@
+_temp
+.DS_Store
+
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
+
+# C extensions
+*.so
+
+# Arquivos do ambiente virtual (por exemplo, venv/)
+.venv/
+venv/
+ENV/
+env/
+
+# Ferramentas de empacotamento
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+*.egg-info/
+.installed.cfg
+*.egg
+
+# Distribuição PyInstaller
+# Veja https://pyinstaller.org/en/stable/manual/hooks.html#understanding-pyinstaller-hooks
+*.manifest
+*.spec
+
+# Pyre type checker
+.pyre/
+
+# Caches do pytest
+.pytest_cache/
+
+# mypy
+.mypy_cache/
+.dmypy.json
+dmypy.json
+
+# PyCharm / VSCode / outros IDEs
+.idea/
+.vscode/
+*.sublime-project
+*.sublime-workspace
+
+# Jupyter Notebook checkpoints
+.ipynb_checkpoints/
+
+# Arquivos de log
+*.log
+
+# Arquivos de configuração locais e variáveis sensíveis
+.env
+.env.*
+
+# Arquivos temporários
+*.tmp
+*.temp
+*.bak
+*.swp
+*~
+
+# Arquivos gerados por notebooks ou scripts
+output/
+*.out
