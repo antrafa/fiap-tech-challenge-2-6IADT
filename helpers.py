@@ -10,8 +10,23 @@ PALETTE = {
     "text_dark": (44, 62, 80),
     "text_light": (255, 255, 255),
     "accent": (231, 76, 60),
-    "shadow": (200, 200, 200)
+    "shadow": (200, 200, 200),
+    "route_color": (173, 216, 230),
+    "route_minor_color": (190, 160, 130),
+    "point_critical": (0, 0, 139),
+    "point_regular": (0, 100, 0),
+    "point_glow": (255, 255, 0),
 }
+
+# PALETTE = {
+#     "background": (255, 248, 220),
+#     "primary": (139, 69, 19),
+#     "secondary": (222, 184, 135),
+#     "text_dark": (70, 40, 20),
+#     "text_light": (255, 255, 255),
+#     "accent": (165, 42, 42),
+#     "shadow": (184, 134, 11)          # Tom de ouro velho para sombras
+# }
 
 def generate_points(n):
     points = []
@@ -25,7 +40,7 @@ def generate_points(n):
 
 def draw_points(screen, points):
     for point in points:
-        color = PALETTE["accent"] if point['priority'] == 0 else PALETTE["primary"]
+        color = PALETTE["point_critical"] if point['priority'] == 0 else PALETTE["point_regular"]
         pygame.draw.circle(screen, color, point['coords'], 5)
 
 def draw_route(screen, route, points, color, thickness=2):

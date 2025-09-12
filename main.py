@@ -36,6 +36,14 @@ slider_generations = Slider(SLIDER_X + SLIDER_WIDTH + 20, SLIDER_Y_GEN, SLIDER_W
 chart_area = pygame.Rect(20, 180, 450, 700)
 map_area = pygame.Rect(530, 180, 450, 700)
 
+# Carrega a imagem do mapa e redimensiona para a área de visualização das rotas
+try:
+    map_background_image = pygame.image.load('map_background.png').convert_alpha()
+    map_background_image = pygame.transform.scale(map_background_image, (map_area.width, map_area.height))
+except pygame.error as e:
+    print(f"Erro ao carregar a imagem do mapa: {e}")
+    map_background_image = None
+
 def main():
     global num_points, num_generations, running_ga
     
@@ -79,6 +87,9 @@ def main():
                 best_fitness_history = []
             
             if button_run_ga.is_clicked(event):
+                if current_population is None:
+                    current_population = Population(size=population_size, points=points)
+                    current_best_individual = current_population.get_fittest()
                 running_ga = not running_ga
                 
             
@@ -96,10 +107,17 @@ def main():
             best_fitness_history.append(current_best_individual.fitness)
             generation += 1
         
-        print_screen(points, current_best_individual, generation, best_fitness_history)
+        print_screen(points, current_best_individual, generation, best_fitness_history, current_population)
 
+def get_second_best_individual(population):
+    if len(population.population) < 2:
+        return None
+    best_individual = population.get_fittest()
+    temp_population = [ind for ind in population.population if ind != best_individual]
+    second_best = max(temp_population, key=lambda x: x.fitness)    
+    return second_best
 
-def print_screen(points, current_best_individual, generation, best_fitness_history):
+def print_screen(points, current_best_individual, generation, best_fitness_history, current_population):
     screen.fill(PALETTE["background"])
 
     pygame.draw.rect(screen, PALETTE["secondary"], (0, 70, width, UI_PANEL_HEIGHT))
@@ -112,15 +130,26 @@ def print_screen(points, current_best_individual, generation, best_fitness_histo
         
     draw_text(screen, f"Cidades: {num_points}", (180, 90), color=PALETTE["text_dark"])
     draw_text(screen, f"Gerações: {generation}/{num_generations}", (490, 90), font_size=20, color=PALETTE["text_dark"])
-        
-    draw_plot(screen, best_fitness_history, chart_area)
-        
-    draw_points(screen, points)
-    if running_ga and current_best_individual:
-        best_dist = 1/current_best_individual.fitness if current_best_individual and current_best_individual.fitness > 0 else 0
-        draw_text(screen, f"Melhor Distância: {best_dist:.2f}", (105, 150), font_size=20, color=PALETTE["text_dark"])
-        draw_route(screen, current_best_individual.route, points, PALETTE["primary"], thickness=3)
+    
+    best_dist = 1/current_best_individual.fitness if current_best_individual and current_best_individual.fitness > 0 else 0
+    draw_text(screen, f"Melhor Distância: {best_dist:.2f}", (105, 150), font_size=20, color=PALETTE["text_dark"])
 
+    draw_plot(screen, best_fitness_history, chart_area)
+    
+    if 'map_background_image' in globals():
+        screen.blit(map_background_image, map_area.topleft)
+    
+    
+    if running_ga and current_population:
+        second_best_individual = get_second_best_individual(current_population)
+        if second_best_individual:
+            draw_route(screen, second_best_individual.route, points, (100, 100, 100), thickness=2)
+    
+    if running_ga and current_best_individual:
+        draw_route(screen, current_best_individual.route, points, PALETTE["route_color"], thickness=3)
+
+    draw_points(screen, points)
+    
     pygame.display.flip()
     pygame.time.wait(10)
 
