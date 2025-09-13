@@ -1,9 +1,4 @@
-"""
-Elementos de UI para a aplicação de Otimização de Rotas com Algoritmo Genético.
-
-Este módulo define componentes de UI reutilizáveis como botões e sliders para a
-interface com Pygame.
-"""
+"""Define componentes de UI reutilizáveis (botões, sliders) para Pygame."""
 
 import pygame
 from helpers import PALETTE
@@ -11,88 +6,44 @@ from helpers import PALETTE
 screen = None
 
 class Button:
-    """
-    Um elemento de UI de botão clicável.
-
-    Atributos:
-        rect (pygame.Rect): O retângulo que define a posição e o tamanho do botão.
-        text (str): O texto exibido no botão.
-        action (str): Um identificador para a ação do botão.
-        font (pygame.font.Font): A fonte usada para o texto do botão.
-        color (tuple): A cor de fundo do botão.
-    """
+    """Um elemento de UI de botão clicável com estado de desabilitado."""
     def __init__(self, rect, text, action):
-        """
-        Inicializa um objeto Button.
-
-        Args:
-            rect (tuple): Uma tupla (x, y, width, height) para o retângulo do botão.
-            text (str): O texto a ser exibido no botão.
-            action (str): A ação associada ao botão.
-        """
+        """Inicializa um botão com posição, texto e ação."""
         self.rect = pygame.Rect(rect)
         self.text = text
         self.action = action
         self.font = pygame.font.Font(None, 24)
         self.color = PALETTE["secondary"]
+        self.disabled_color = (200, 200, 200)
+        self.disabled = False
 
     def draw(self, screen):
-        """
-        Desenha o botão na tela.
+        """Desenha o botão na tela, com aparência de desabilitado se necessário."""
+        bg_color = self.disabled_color if self.disabled else self.color
+        text_color = (100, 100, 100) if self.disabled else PALETTE["text_dark"]
+        border_color = (150, 150, 150) if self.disabled else PALETTE["text_dark"]
 
-        Args:
-            screen (pygame.Surface): A tela do Pygame para desenhar.
-        """
         shadow_rect = self.rect.copy()
         shadow_rect.move_ip(2, 2)
         pygame.draw.rect(screen, PALETTE["shadow"], shadow_rect, border_radius=10)
-        pygame.draw.rect(screen, self.color, self.rect, border_radius=10)
-        pygame.draw.rect(screen, PALETTE["text_dark"], self.rect, 2, border_radius=10)
-        text_surface = self.font.render(self.text, True, PALETTE["text_dark"])
+        pygame.draw.rect(screen, bg_color, self.rect, border_radius=10)
+        pygame.draw.rect(screen, border_color, self.rect, 2, border_radius=10)
+        text_surface = self.font.render(self.text, True, text_color)
         text_rect = text_surface.get_rect(center=self.rect.center)
         screen.blit(text_surface, text_rect)
 
     def is_clicked(self, event):
-        """
-        Verifica se o botão foi clicado.
-
-        Args:
-            event (pygame.event.Event): O evento do Pygame a ser verificado.
-
-        Returns:
-            bool: True se o botão foi clicado, False caso contrário.
-        """
+        """Verifica se o botão foi clicado, retornando False se estiver desabilitado."""
+        if self.disabled:
+            return False
         if event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
             return self.rect.collidepoint(event.pos)
         return False
 
 class Slider:
-    """
-    Um elemento de UI de slider para selecionar um valor dentro de um intervalo.
-
-    Atributos:
-        rect (pygame.Rect): O retângulo para a trilha do slider.
-        min_val (int): O valor mínimo do slider.
-        max_val (int): O valor máximo do slider.
-        val (int): O valor atual do slider.
-        handle_pos (int): A coordenada x do manipulador do slider.
-        handle_rect (pygame.Rect): O retângulo para o manipulador do slider.
-        is_dragging (bool): True se o usuário estiver arrastando o manipulador.
-    """
+    """Um elemento de UI de slider para selecionar um valor numérico."""
     def __init__(self, x, y, w, h, min_val, max_val, initial_val, is_float=False):
-        """
-        Inicializa um objeto Slider.
-
-        Args:
-            x (int): A coordenada x do slider.
-            y (int): A coordenada y do slider.
-            w (int): A largura do slider.
-            h (int): A altura do slider.
-            min_val (int): O valor mínimo.
-            max_val (int): O valor máximo.
-            initial_val (int): O valor inicial.
-            is_float (bool): Se o slider deve usar valores float.
-        """
+        """Inicializa um slider com um intervalo de valores e valor inicial."""
         self.rect = pygame.Rect(x, y, w, h)
         self.min_val = min_val
         self.max_val = max_val
@@ -103,27 +54,12 @@ class Slider:
         self.is_dragging = False
 
     def draw(self, screen):
-        """
-        Desenha o slider na tela.
-
-        Args:
-            screen (pygame.Surface): A tela do Pygame para desenhar.
-        """
+        """Desenha o slider na tela."""
         pygame.draw.rect(screen, PALETTE["shadow"], self.rect, border_radius=5)
         pygame.draw.rect(screen, PALETTE["text_dark"], self.handle_rect, border_radius=5)
 
     def handle_event(self, event):
-        """
-        Lida com a interação do usuário com o slider.
-
-        Atualiza o valor do slider com base em eventos do mouse.
-
-        Args:
-            event (pygame.event.Event): O evento do Pygame a ser tratado.
-
-        Returns:
-            int or float: O valor atual do slider.
-        """
+        """Lida com a interação do mouse para arrastar o slider e atualizar seu valor."""
         if event.type == pygame.MOUSEBUTTONDOWN and self.handle_rect.collidepoint(event.pos):
             self.is_dragging = True
         elif event.type == pygame.MOUSEBUTTONUP:

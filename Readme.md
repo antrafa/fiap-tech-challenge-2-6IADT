@@ -78,4 +78,3 @@ Isso irá abrir uma janela do Pygame mostrando o processo de otimização. Utili
 *   Implementar outros operadores de cruzamento e mutação.
 *   Adicionar mais restrições ao problema, como janelas de tempo para entrega.
 *   Permitir a importação de dados de pontos de entrega de um arquivo (CSV, JSON, etc.).
-*   Melhorar a interface do usuário com mais informações e controles.

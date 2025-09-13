@@ -3,37 +3,15 @@ import numpy as np
 from math import sqrt
 
 class Individual:
-    """
-    Representa uma única solução (uma rota) na população.
-
-    Atributos:
-        route (list): Uma lista de índices de pontos representando a ordem de visitação.
-        points (list): Uma lista de todos os pontos possíveis, contendo seus dados.
-        fitness (float): A pontuação de aptidão do indivíduo.
-    """
+    """Representa uma única rota (solução) na população do AG."""
     def __init__(self, route, points):
-        """
-        Inicializa um objeto Individual.
-
-        Args:
-            route (list): A rota para este indivíduo.
-            points (list): A lista de todos os pontos.
-        """
+        """Inicializa um indivíduo com uma rota e calcula sua aptidão."""
         self.route = route
         self.points = points
         self.fitness = self.calculate_fitness()
 
     def calculate_fitness(self):
-        """
-        Calcula a aptidão do indivíduo.
-
-        A aptidão é inversamente proporcional ao custo total, que inclui a
-        distância total da rota e penalidades por exceder a capacidade do veículo
-        e por não priorizar pontos importantes.
-
-        Returns:
-            float: O valor da aptidão.
-        """
+        """Calcula a aptidão da rota com base na distância e penalidades."""
         total_distance = 0
         max_capacity = 50 
         current_volume = 0
@@ -63,48 +41,20 @@ class Individual:
 
     @staticmethod
     def get_distance(point1, point2):
-        """
-        Calcula a distância Euclidiana entre dois pontos.
-
-        Args:
-            point1 (tuple): As coordenadas do primeiro ponto (x, y).
-            point2 (tuple): As coordenadas do segundo ponto (x, y).
-
-        Returns:
-            float: A distância Euclidiana.
-        """
+        """Calcula a distância Euclidiana entre dois pontos."""
         return sqrt((point1[0] - point2[0])**2 + (point1[1] - point2[1])**2)
 
 class Population:
-    """
-    Gerencia uma coleção de indivíduos (a população) para o algoritmo genético.
-
-    Esta classe lida com a criação da população inicial e o processo de evolução,
-    incluindo seleção, cruzamento e mutação.
-
-    Atributos:
-        population (list): Uma lista de objetos Individual.
-    """
+    """Gerencia a coleção de indivíduos (rotas) e o processo evolutivo."""
     def __init__(self, size, points):
-        """
-        Inicializa um objeto Population.
-
-        Args:
-            size (int): O número de indivíduos na população.
-            points (list): A lista de todos os pontos possíveis.
-        """
+        """Cria uma população inicial de rotas aleatórias."""
         self.population = []
         for _ in range(size):
             route = list(np.random.permutation(len(points)))
             self.population.append(Individual(route, points))
 
     def get_fittest(self):
-        """
-        Encontra o indivíduo com a maior aptidão na população.
-
-        Returns:
-            Individual: O indivíduo mais apto.
-        """
+        """Retorna o indivíduo mais apto (melhor rota) da população."""
         best_individual = self.population[0]
         for individual in self.population:
             if individual.fitness > best_individual.fitness:
@@ -112,47 +62,18 @@ class Population:
         return best_individual
 
     def get_average_fitness(self):
-        """
-        Calcula a aptidão média de toda a população.
-
-        Returns:
-            float: A aptidão média.
-        """
+        """Calcula a aptidão média de toda a população."""
         total_fitness = sum(ind.fitness for ind in self.population)
         return total_fitness / len(self.population)
 
     def select_parent_tournament(self, pool_size=5):
-        """
-
-        Seleciona um pai da população usando seleção por torneio.
-        Um subconjunto aleatório da população é escolhido (o pool do torneio), e
-        o indivíduo mais apto deste pool é selecionado como o pai.
-
-        Args:
-            pool_size (int): O número de indivíduos no torneio.
-
-        Returns:
-            Individual: O pai selecionado.
-        """
+        """Seleciona um indivíduo para reprodução usando seleção por torneio."""
         tournament_pool = random.sample(self.population, pool_size)
         fittest_parent = max(tournament_pool, key=lambda x: x.fitness)
         return fittest_parent
 
     def crossover_ox1(self, parent1, parent2):
-        """
-        Realiza o Crossover de Ordem (OX1) em dois pais para criar uma rota filha.
-
-        Uma subsequência aleatória do primeiro pai é copiada para o filho.
-        Os genes restantes são preenchidos a partir do segundo pai na ordem
-        em que aparecem, evitando duplicatas.
-
-        Args:
-            parent1 (Individual): O primeiro pai.
-            parent2 (Individual): O segundo pai.
-
-        Returns:
-            list: A rota filha resultante.
-        """
+        """Realiza o crossover de ordem (OX1) para criar uma nova rota filha."""
         child_route = [None] * len(parent1.route)
         start_pos = random.randint(0, len(parent1.route) - 1)
         end_pos = random.randint(0, len(parent1.route) - 1)
@@ -171,35 +92,14 @@ class Population:
         return child_route_filled
 
     def mutate(self, route, mutation_rate):
-        """
-        Aplica mutação de troca a uma rota.
-
-        Com uma probabilidade definida pela taxa de mutação, dois genes (pontos)
-        na rota são trocados.
-
-        Args:
-            route (list): A rota a ser mutada.
-            mutation_rate (float): A probabilidade de ocorrência de mutação.
-
-        Returns:
-            list: A rota mutada.
-        """
+        """Aplica mutação de troca em uma rota com base na taxa de mutação."""
         if random.random() < mutation_rate:
             idx1, idx2 = random.sample(range(len(route)), 2)
             route[idx1], route[idx2] = route[idx2], route[idx1]
         return route
 
     def evolve(self, mutation_rate, points):
-        """
-        Evolui a população para a próxima geração.
-
-        Uma nova população é criada através de elitismo (preservando o melhor
-        indivíduo), cruzamento e mutação.
-
-        Args:
-            mutation_rate (float): A taxa de mutação a ser usada para a nova geração.
-            points (list): A lista de todos os pontos possíveis.
-        """
+        """Evolui a população para a próxima geração usando elitismo, crossover e mutação."""
         new_population = []
         elite = self.get_fittest()
         new_population.append(Individual(elite.route, points))

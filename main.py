@@ -1,14 +1,8 @@
-"""
-Ponto de entrada principal para a aplicação de Otimização de Rotas com Algoritmo Genético.
-
-Este script inicializa o Pygame, configura a UI e executa o loop principal da aplicação.
-Ele lida com as interações do usuário, gerencia a evolução do algoritmo genético
-e visualiza os resultados em tempo real.
-"""
+"""Ponto de entrada e loop principal da aplicação de otimização de rotas."""
 
 import pygame
 import sys
-from helpers import draw_text, draw_points, draw_route, draw_plot, draw_legend, generate_points, PALETTE
+from helpers import draw_text, draw_points, draw_route, draw_plot, draw_legend, generate_points, generate_llm_report, PALETTE
 from ui_elements import Button, Slider
 from ga_classes import Population
 
@@ -24,12 +18,13 @@ CHART_MAP_Y = UI_PANEL_Y + UI_PANEL_HEIGHT + 20
 CHART_MAP_HEIGHT = height - CHART_MAP_Y - 20
 
 BUTTON_MARGIN = 15
-BUTTON_WIDTH = (width / 3) - 21
+BUTTON_WIDTH = (width / 4) - 21
 BUTTON_HEIGHT = 40
 BUTTON_Y = UI_PANEL_Y + 120
 BUTTON_RELOAD_X = BUTTON_MARGIN
 BUTTON_REGEN_X = BUTTON_RELOAD_X + BUTTON_WIDTH + BUTTON_MARGIN
 BUTTON_RUN_X = BUTTON_REGEN_X + BUTTON_WIDTH + BUTTON_MARGIN
+BUTTON_REPORT_X = BUTTON_RUN_X + BUTTON_WIDTH + BUTTON_MARGIN
 
 SLIDER_WIDTH = 320
 SLIDER_HEIGHT = 15
@@ -47,9 +42,10 @@ initial_population_size = 50
 initial_mutation_rate = 0.05
 
 # --- Inicialização dos Elementos de UI ---
-button_reload = Button((BUTTON_RELOAD_X, BUTTON_Y, BUTTON_WIDTH, BUTTON_HEIGHT), "Recarregar", "reload")
-button_regenerate = Button((BUTTON_REGEN_X, BUTTON_Y, BUTTON_WIDTH, BUTTON_HEIGHT), "Regerar", "regenerate")
+button_reload = Button((BUTTON_RELOAD_X, BUTTON_Y, BUTTON_WIDTH, BUTTON_HEIGHT), "Reiniciar", "reload")
+button_regenerate = Button((BUTTON_REGEN_X, BUTTON_Y, BUTTON_WIDTH, BUTTON_HEIGHT), "Gerar cidades", "regenerate")
 button_run_ga = Button((BUTTON_RUN_X, BUTTON_Y, BUTTON_WIDTH, BUTTON_HEIGHT), "Rodar GA", "run")
+button_generate_report = Button((BUTTON_REPORT_X, BUTTON_Y, BUTTON_WIDTH, BUTTON_HEIGHT), "Gerar Relatório", "report")
 
 slider_cities = Slider(SLIDER_X_COL1, SLIDER_Y_ROW1, SLIDER_WIDTH, SLIDER_HEIGHT, 2, 200, initial_num_points)
 slider_generations = Slider(SLIDER_X_COL2, SLIDER_Y_ROW1, SLIDER_WIDTH, SLIDER_HEIGHT, 10, 2000, initial_num_generations)
@@ -68,11 +64,8 @@ except pygame.error as e:
     map_background_image = None
 
 
-
 def main():
-    """
-    Função principal para executar a aplicação.
-    """
+    """Função principal que executa o loop da aplicação, lida com eventos e atualiza a tela."""
     # Variáveis de estado da simulação
     num_points = initial_num_points
     num_generations = initial_num_generations
@@ -104,7 +97,6 @@ def main():
                 num_points = new_num_points
                 points = generate_points(num_points)
                 running_ga = False
-                # Reseta a simulação
                 current_population = Population(size=int(population_size), points=points)
                 current_best_individual = current_population.get_fittest()
                 generation = 0
@@ -118,7 +110,6 @@ def main():
             if new_population_size != population_size:
                 population_size = new_population_size
                 running_ga = False
-                # Reseta a simulação
                 current_population = Population(size=int(population_size), points=points)
                 current_best_individual = current_population.get_fittest()
                 generation = 0
@@ -131,7 +122,6 @@ def main():
             # Botões
             if button_reload.is_clicked(event):
                 running_ga = False
-                # Reseta a simulação
                 current_population = Population(size=int(population_size), points=points)
                 current_best_individual = current_population.get_fittest()
                 generation = 0
@@ -143,12 +133,18 @@ def main():
             if button_regenerate.is_clicked(event):
                 running_ga = False
                 points = generate_points(num_points)
-                # Reseta a simulação
                 current_population = Population(size=int(population_size), points=points)
                 current_best_individual = current_population.get_fittest()
                 generation = 0
                 best_fitness_history = []
-                
+            
+            if button_generate_report.is_clicked(event):
+                # O botão já está desabilitado pela UI, mas esta é uma segurança extra
+                if generation >= num_generations:
+                    generate_llm_report(current_best_individual, points)
+                else:
+                    print("Aguarde a simulação terminar para gerar o relatório.")
+
         # --- Lógica de Evolução do AG ---
         if running_ga and generation < num_generations:
             current_population.evolve(mutation_rate, points)
@@ -164,15 +160,7 @@ def main():
         )
 
 def get_second_best_individual(population):
-    """
-    Encontra o segundo melhor indivíduo na população.
-
-    Args:
-        population (Population): A população atual.
-
-    Returns:
-        Individual or None: O segundo indivíduo mais apto, ou None se não for encontrado.
-    """
+    """Encontra o segundo indivíduo mais apto da população."""
     if not population or len(population.population) < 2:
         return None
     best_individual = population.get_fittest()
@@ -183,20 +171,24 @@ def get_second_best_individual(population):
     return second_best
 
 def print_screen(screen, points, current_best_individual, generation, num_generations, best_fitness_history, current_population, running_ga, num_points, population_size, mutation_rate):
-    """
-    Lida com todas as operações de desenho na tela.
-    """
+    """Lida com todas as operações de desenho na tela."""
     screen.fill(PALETTE["background"])
 
     # Desenha o painel da UI e os elementos
     pygame.draw.rect(screen, PALETTE["secondary"], (0, UI_PANEL_Y, width, UI_PANEL_HEIGHT))
     draw_text(screen, "Otimização de Rotas - Algoritmo Genético", (width // 2, 40), font_size=48, color=PALETTE["text_dark"])
     
-    # Desenha botões
+    # --- Lógica dos Botões ---
+    # Habilita/desabilita o botão de relatório
+    button_generate_report.disabled = (generation < num_generations)
+    # Alterna o texto do botão de execução
     button_run_ga.text = "Pausar" if running_ga else "Rodar GA"
+    
+    # Desenha os botões
     button_reload.draw(screen)
     button_regenerate.draw(screen)
     button_run_ga.draw(screen)
+    button_generate_report.draw(screen)
     
     # Desenha sliders e seus valores
     slider_cities.draw(screen)
