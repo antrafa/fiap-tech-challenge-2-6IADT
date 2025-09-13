@@ -111,8 +111,16 @@ def draw_plot(screen, history, rect, x_label='Geração', y_label='Aptidão'):
     scaled_surf = pygame.transform.scale(surf, (rect.width, rect.height))
     screen.blit(scaled_surf, rect.topleft)
 
-def generate_llm_report(best_individual, points):
-    """Gera um relatório de rota em Markdown usando a API da OpenAI."""
+def generate_llm_report(screen, width, height, best_individual, points):
+    """Gera um relatório de rota em Markdown usando a API da OpenAI, mostrando uma tela de loading."""
+    # --- Tela de Loading ---
+    overlay = pygame.Surface((width, height), pygame.SRCALPHA)
+    overlay.fill((0, 0, 0, 180))  # Overlay preto semi-transparente
+    screen.blit(overlay, (0, 0))
+    draw_text(screen, "Gerando relatório com IA...", (width // 2, height // 2 - 20), font_size=30, color=PALETTE["text_light"])
+    draw_text(screen, "Aguarde, a tela pode congelar por alguns segundos.", (width // 2, height // 2 + 20), font_size=20, color=PALETTE["text_light"])
+    pygame.display.flip()
+
     print("Gerando relatório com a API da OpenAI... Isso pode levar alguns segundos.")
     api_key = os.getenv("OPENAI_API_KEY")
     if not api_key or api_key == "SUA_CHAVE_DA_API_AQUI":
@@ -159,7 +167,7 @@ Por favor, gere o relatório completo com base nestes dados."""
         completion = client.chat.completions.create(
             model="gpt-3.5-turbo",
             messages=[
-                {"role": "system", "content": "Você é um assistente de logística que gera relatórios em Markdown."}, 
+                {"role": "system", "content": "Você é um assistente de logística que gera relatórios em Markdown."},
                 {"role": "user", "content": prompt}
             ]
         )

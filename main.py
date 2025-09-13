@@ -139,11 +139,8 @@ def main():
                 best_fitness_history = []
             
             if button_generate_report.is_clicked(event):
-                # O botão já está desabilitado pela UI, mas esta é uma segurança extra
-                if generation >= num_generations:
-                    generate_llm_report(current_best_individual, points)
-                else:
-                    print("Aguarde a simulação terminar para gerar o relatório.")
+                # A classe do botão já impede o clique se estiver desabilitado
+                generate_llm_report(screen, width, height, current_best_individual, points)
 
         # --- Lógica de Evolução do AG ---
         if running_ga and generation < num_generations:
