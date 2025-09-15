@@ -61,6 +61,14 @@ class Population:
                 best_individual = individual
         return best_individual
 
+    def get_second_fittest(self):
+        """Encontra o segundo indivíduo mais apto da população."""
+        if len(self.population) < 2:
+            return None
+        
+        sorted_population = sorted(self.population, key=lambda x: x.fitness, reverse=True)
+        return sorted_population[1]
+
     def get_average_fitness(self):
         """Calcula a aptidão média de toda a população."""
         total_fitness = sum(ind.fitness for ind in self.population)

@@ -156,16 +156,7 @@ def main():
             population_size, mutation_rate
         )
 
-def get_second_best_individual(population):
-    """Encontra o segundo indivíduo mais apto da população."""
-    if not population or len(population.population) < 2:
-        return None
-    best_individual = population.get_fittest()
-    temp_population = [ind for ind in population.population if ind != best_individual]
-    if not temp_population:
-        return None
-    second_best = max(temp_population, key=lambda x: x.fitness)    
-    return second_best
+
 
 def print_screen(screen, points, current_best_individual, generation, num_generations, best_fitness_history, current_population, running_ga, num_points, population_size, mutation_rate):
     """Lida com todas as operações de desenho na tela."""
@@ -224,7 +215,7 @@ def print_screen(screen, points, current_best_individual, generation, num_genera
     # Desenha as rotas apenas se a simulação tiver começado
     if generation > 0:
         if current_population:
-            second_best_individual = get_second_best_individual(current_population)
+            second_best_individual = current_population.get_second_fittest()
             if second_best_individual:
                 draw_route(screen, second_best_individual.route, points, (100, 100, 100), thickness=2)
         

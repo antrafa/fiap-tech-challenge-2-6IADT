@@ -1,80 +1,129 @@
-# Tech Challenge - Otimização de Rotas com Algoritmos Genéticos
+# Otimização de Rotas com Algoritmo Genético e IA
 
-Este é o repositório do projeto "Tech Challenge - Fase 2", focado na otimização de rotas para distribuição de medicamentos e insumos hospitalares. O projeto utiliza algoritmos genéticos para resolver o problema do caixeiro viajante (TSP), buscando a rota mais curta e eficiente para as entregas.
+**Tech Challenge - Fase 2**
 
-O sistema também inclui uma visualização em tempo real das rotas otimizadas, desenvolvida com a biblioteca Pygame.
+**Autores:**
+*   Ackeley Lennon (RM366072)
+*   Antonio Rafael Ortega (RM365237)
+*   Eduardo Tadeu Agarbella (RM366322)
+*   Leandro Pessoa de Souza (RM365755)
+*   Mateus Teixeira Castro (RM366469)
 
-## Features
+**Curso:** FIAP - IA para DEVS - 6IADT
+**Data:** 14 de Outubro de 2025
 
-*   **Algoritmo Genético:** Implementação de um algoritmo genético para resolver o problema do caixeiro viajante (TSP).
-*   **Operadores de GA:** Utiliza operadores de seleção por torneio, cruzamento OX1 e mutação por troca.
-*   **Visualização em Tempo Real:** Interface gráfica com Pygame para visualizar o processo de otimização, a melhor rota encontrada e a evolução da aptidão.
-*   **Interatividade:** Permite ajustar o número de cidades e de gerações em tempo real através de sliders.
-*   **Penalidades:** O cálculo de aptidão inclui penalidades por excesso de capacidade do veículo e por não priorizar pontos de entrega importantes.
+---
 
-## Estrutura do Projeto
+## 1. Visão Geral
+
+Este projeto é uma solução para o **Problema do Caixeiro Viajante (TSP)**, focado na otimização de rotas de entrega. Utilizando um **Algoritmo Genético** implementado em Python, a aplicação busca a rota mais eficiente (menor distância) para visitar uma série de pontos, respeitando restrições como capacidade de carga e prioridade de entrega.
+
+A aplicação conta com uma **interface gráfica interativa**, desenvolvida com **Pygame**, que permite visualizar o processo de otimização em tempo real. O grande diferencial é a **integração com um Large Language Model (GPT-3.5)**, que gera automaticamente um relatório analítico da melhor rota encontrada.
+
+<!-- Inserir um GIF ou Screenshot da aplicação aqui -->
+
+## 2. Funcionalidades
+
+-   **Núcleo de Otimização:**
+    -   Implementação de um Algoritmo Genético com operadores de **Seleção por Torneio**, **Crossover de Ordem (OX1)** e **Mutação por Troca**.
+    -   **Função de Aptidão Complexa:** Avalia as rotas com base na distância e aplica penalidades por excesso de capacidade do veículo e por não priorizar entregas urgentes.
+-   **Interface Gráfica Interativa:**
+    -   Visualização em tempo real da **melhor e segunda melhor rota** sobre um mapa.
+    -   Gráfico que exibe a **evolução da aptidão** da melhor solução ao longo das gerações.
+    -   Painel de controle com **sliders** para ajustar dinamicamente os parâmetros do AG (nº de cidades, nº de gerações, tamanho da população, taxa de mutação).
+    -   Botões para controlar a execução da simulação (iniciar, pausar, reiniciar, gerar novos pontos).
+-   **Integração com IA:**
+    -   Funcionalidade de **"Gerar Relatório"** que utiliza a API da OpenAI para criar uma análise detalhada da rota otimizada.
+    -   O relatório gerado em Markdown inclui instruções para o motorista, análise de eficiência e sugestões de melhoria.
+
+## 3. Tecnologias Utilizadas
+
+-   **Linguagem:** Python 3
+-   **Interface Gráfica:** Pygame
+-   **Computação Numérica:** Numpy
+-   **Geração de Gráficos:** Matplotlib
+-   **Integração com IA:** OpenAI
+-   **Gestão de Ambiente:** Dotenv
+
+## 4. Estrutura do Projeto
 
 ```
-├───.gitignore
-├───ga_classes.py         # Contém as classes `Individual` e `Population` do algoritmo genético.
-├───helpers.py            # Funções auxiliares para desenho, geração de dados e conversão de cores.
-├───main.py               # Ponto de entrada principal da aplicação, com o loop do Pygame.
-├───map_background.png    # Imagem de fundo para o mapa.
-├───Readme.md             # Este arquivo.
-├───requirements.txt      # Dependências do projeto.
-└───ui_elements.py        # Classes para os elementos de UI, como botões e sliders.
+. 
+├── doc/ # Documentação detalhada dos módulos 
+│ ├── ga_classes.md 
+│ ├── helpers.md 
+│ ├── main.md 
+│ ├── SUMARIO.md 
+│ └── ui_elements.md 
+├── .env_sample # Exemplo de arquivo para a chave da API 
+├── ga_classes.py # Lógica do Algoritmo Genético 
+├── helpers.py # Funções auxiliares (desenho, IA, etc.) 
+├── main.py # Ponto de entrada e loop principal 
+├── Readme.md # Este arquivo 
+├── requirements.txt # Dependências do projeto 
+└── ui_elements.py # Classes dos componentes de UI
 ```
 
-## Tecnologias Utilizadas
+## 5. Instalação e Execução
 
-*   **Python 3**
-*   **Pygame:** Para a interface gráfica e visualização.
-*   **Matplotlib:** Para a plotagem do gráfico de evolução da aptidão.
-*   **Numpy:** Para operações numéricas eficientes.
+Siga os passos abaixo para configurar e executar o projeto localmente.
 
-## Como Executar o Projeto
+### Pré-requisitos
 
-Siga os passos abaixo para configurar e executar o projeto em seu ambiente local.
+-   Python 3.8 ou superior.
 
-### 1. Pré-requisitos
-
-*   Python 3.x instalado.
-
-### 2. Configurar o Ambiente Virtual
-
-Recomendamos o uso de um ambiente virtual para isolar as dependências do projeto.
+### Passo 1: Clonar o Repositório
 
 ```bash
-# Crie o ambiente virtual
+git clone <URL_DO_REPOSITORIO>
+cd <NOME_DO_DIRETORIO>
+```
+
+### Passo 2: Configurar o Ambiente Virtual
+
+É altamente recomendável usar um ambiente virtual para isolar as dependências.
+
+```bash
+# Criar o ambiente
 python -m venv venv
 
-# Ative o ambiente virtual
+# Ativar o ambiente
 # No Windows:
-venv\Scripts\activate
+# venv\Scripts\activate
 # No macOS/Linux:
 source venv/bin/activate
 ```
 
-### 3. Instalar as Dependências
-
-Com o ambiente virtual ativado, instale as bibliotecas necessárias usando o `requirements.txt`.
+### Passo 3: Instalar as Dependências
 
 ```bash
 pip install -r requirements.txt
 ```
 
-### 4. Executar o Algoritmo e a Visualização
+### Passo 4: Configurar a Chave da API da OpenAI
 
-O código principal para a otimização e visualização está no arquivo `main.py`.
+Para usar a funcionalidade de geração de relatório com IA, você precisa de uma chave da API da OpenAI.
+
+1.  Renomeie o arquivo `.env_sample` para `.env`.
+2.  Abra o arquivo `.env` e adicione sua chave:
+
+    ```
+    OPENAI_API_KEY="sua_chave_secreta_aqui"
+    ```
+
+### Passo 5: Executar a Aplicação
 
 ```bash
 python main.py
 ```
 
-Isso irá abrir uma janela do Pygame mostrando o processo de otimização. Utilize os sliders para ajustar o número de cidades e gerações, e os botões para controlar a simulação.
+## 6. Como Usar
 
-## Melhorias Futuras
+1.  **Ajuste os Parâmetros:** Use os sliders para configurar a complexidade do problema e os parâmetros do algoritmo.
+2.  **Inicie a Simulação:** Clique em **"Rodar GA"** para iniciar o processo de otimização.
+3.  **Observe a Evolução:** Acompanhe a melhoria da rota no mapa e a curva de aptidão no gráfico.
+4.  **Gere o Relatório:** Ao final da simulação (quando o número de gerações for atingido), o botão **"Gerar Relatório"** ficará ativo. Clique nele para que a IA analise a melhor rota e crie o arquivo `RELATORIO_DE_ROTA.md`.
 
-*   Implementar outros operadores de cruzamento e mutação.
-*   Adicionar mais restrições ao problema, como janelas de tempo para entrega.
-*   Permitir a importação de dados de pontos de entrega de um arquivo (CSV, JSON, etc.).
+## 7. Documentação Detalhada
+
+Para uma análise aprofundada de cada módulo do projeto, consulte a documentação na pasta `doc/`. Comece pelo **[Sumário da Documentação](./doc/SUMARIO.md)**.
